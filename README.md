@@ -1,0 +1,1 @@
+hclq is a command line tool for querying and manipulating HashiCorp HCLv2 files, such as those used by Terraform, Consul, Nomad, and Vault. It's similar to jq, but for HCL. It can also modify HCL, with the option of modifying files in-place.
