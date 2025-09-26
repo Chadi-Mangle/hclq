@@ -1,4 +1,4 @@
-module hclq
+module github.com/Chadi-Mangle/hclq
 
 go 1.24.4
 
