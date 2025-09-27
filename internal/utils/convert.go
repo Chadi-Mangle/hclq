@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"encoding/json"
@@ -17,25 +17,25 @@ func ConvertHclToMap(content []byte) (map[string]any, error) {
 
 	file, diags := parser.ParseHCL(content, "")
 	if diags.HasErrors() {
-		return nil, fmt.Errorf("erreur lors du parsing HCL: %v", diags)
+		return nil, fmt.Errorf("error parsing HCL: %v", diags)
 	}
 
 	ctx := &hcl.EvalContext{}
 	attrs, diags := file.Body.JustAttributes()
 	if diags.HasErrors() {
-		return nil, fmt.Errorf("erreur lors de l'évaluation: %v", diags)
+		return nil, fmt.Errorf("error during evaluation of the HCL attributes: %v", diags)
 	}
 
 	result := make(map[string]any)
 	for name, attr := range attrs {
 		val, diags := attr.Expr.Value(ctx)
 		if diags.HasErrors() {
-			return nil, fmt.Errorf("erreur lors de l'évaluation de %s: %v", name, diags)
+			return nil, fmt.Errorf("error evaluating %s: %v", name, diags)
 		}
 
 		jsonBytes, err := ctyjson.Marshal(val, val.Type())
 		if err != nil {
-			log.Printf("erreur marshall JSON pour %s : %v", name, err)
+			log.Printf("JSON marshal error for %s: %v", name, err)
 			result[name] = val.GoString()
 			continue
 		}
@@ -56,7 +56,7 @@ func ConvertHclToMap(content []byte) (map[string]any, error) {
 func ConvertHclFileToMap(filename string) (map[string]any, error) {
 	content, err := os.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("erreur lors de la lecture du fichier: %v", err)
+		return nil, fmt.Errorf("error reading file: %v", err)
 	}
 	return ConvertHclToMap(content)
 }
@@ -64,13 +64,13 @@ func ConvertHclFileToMap(filename string) (map[string]any, error) {
 func ConvertMapToHcl(data map[string]any) ([]byte, error) {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
-		return nil, fmt.Errorf("erreur conversion en JSON: %v", err)
+		return nil, fmt.Errorf("error converting to JSON: %v", err)
 	}
 
 	parser := hclparse.NewParser()
 	jsonFile, diags := parser.ParseJSON(jsonBytes, "")
 	if diags.HasErrors() {
-		return nil, fmt.Errorf("erreur parsing JSON vers HCL: %v", diags)
+		return nil, fmt.Errorf("error parsing JSON to HCL: %v", diags)
 	}
 
 	hclFile := hclwrite.NewEmptyFile()
@@ -79,13 +79,13 @@ func ConvertMapToHcl(data map[string]any) ([]byte, error) {
 	ctx := &hcl.EvalContext{}
 	jsonAttrs, diags := jsonFile.Body.JustAttributes()
 	if diags.HasErrors() {
-		return nil, fmt.Errorf("erreur évaluation attributs JSON: %v", diags)
+		return nil, fmt.Errorf("error evaluating JSON attributes: %v", diags)
 	}
 
 	for name, attr := range jsonAttrs {
 		val, diags := attr.Expr.Value(ctx)
 		if diags.HasErrors() {
-			return nil, fmt.Errorf("erreur évaluation de %s: %v", name, diags)
+			return nil, fmt.Errorf("error evaluating %s: %v", name, diags)
 		}
 		body.SetAttributeValue(name, val)
 	}
